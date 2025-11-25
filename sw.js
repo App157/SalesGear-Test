@@ -1,12 +1,12 @@
 const CACHE_NAME = 'salesgear-cache-v1';
 const FILES_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/style.css',
-  '/sw.js',
-  '/manifest.json',
-  '/icon-512.png',
-  '/icon-192.png'
+  './',
+  './index.html',
+  './style.css',
+  './sw.js',
+  './manifest.json',
+  './icon-512.png',
+  './icon-192.png'
 ];
 
 // Install: cache all files

@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>SalesGear</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#147ce7">
+  <script src="https://unpkg.com/dexie@3.2.4/dist/dexie.js"></script>
+  <link rel="stylesheet" href="style.css">
+  
+  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#006d77">
+
+
+  <style>
+
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand">
+        <div class="logo">SG</div>
+        <div>
+          <h1>SalesGear</h1>
+          <div class="muted" style="font-size:0.9rem;">Simple stock & sales manager</div>
+        </div>
+      </div>
+
+      <nav>
+        <button class="btn ghost" onclick="showPage('home')">Home</button>
+        <button class="btn ghost" onclick="showPage('allstock')">Stock</button>
+        <button class="btn primary" onclick="showPage('stock')">Add stock</button>
+      </nav>
+    </header>
+
+    <main>
+      <section id="home" class="page show">
+        <div class="two-cols">
+          <div>
+     <div class="card">
+       <div class="calendar-header">
+        <div>
+         <div class="calendar-title" id="calTitle">—</div>
+           <div class="muted" style="font-size:0.95rem;">Calendar</div>
+                </div>
+                <div class="calendar-nav">
+                  <button class="btn-ghost" id="prevMonth">&larr;</button>
+                  <button class="btn-ghost" id="nextMonth">&rarr;</button>
+                </div>
+              </div>
+
+              <div id="calendar-container"></div>
+            </div>
+
+            <div style="height:16px;"></div>
+
+            <div class="card">
+              <h3 style="margin:0 0 8px 0;">Quick Links</h3>
+              <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                <a id="blogLink" class="btn ghost" href="#" target="_blank">View blog</a>
+                <a id="profileLink" class="btn ghost" href="#" target="_blank">Chess profile</a>
+                <a id="channelLink" class="btn ghost" href="https://whatsapp.com/channel/0029VbBxUG19sBI3yNE3WH2I" target="_blank">View channel</a>
+              </div>
+            </div>
+          </div>
+
+          <aside>
+            <div class="card">
+              <h4 style="margin:0 0 12px 0;">Summary</h4>
+              <div class="muted">Total stock items: <strong id="summaryCount">0</strong></div>
+              <div style="height:8px;"></div>
+              <div class="muted" id="summaryStatus">No items yet.</div>
+            </div>
+
+            <div style="height:12px;"></div>
+
+            <div class="card">
+              <h4 style="margin:0 0 12px 0;">Actions</h4>
+              <button class="btn" onclick="downloadJSON()">Export JSON</button>
+              <button class="btn ghost" onclick="importJSON()">Import JSON</button>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ALL STOCK -->
+      <section id="allstock" class="page" style="margin-top:12px;">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <h2 style="margin:0;">Stock List</h2>
+            <div>
+              <button class="btn primary" onclick="showPage('stock')">Add new</button>
+            </div>
+          </div>
+
+          <div id="stockList"></div>
+        </div>
+      </section>
+
+      <!-- ADD STOCK -->
+      <section id="stock" class="page" style="margin-top:12px;">
+        <div class="card">
+          <h2 style="margin-top:0;">Add new stock</h2>
+
+          <div class="form-row">
+            <label for="s_seller">Seller</label>
+            <input id="s_seller" type="text" placeholder="Seller name" />
+          </div>
+
+          <div class="form-row">
+            <label for="s_date">Date</label>
+            <input id="s_date" type="date" />
+          </div>
+
+          <div class="form-row">
+            <label for="s_year">Year model</label>
+            <input id="s_year" type="text" placeholder="e.g. 2018" />
+          </div>
+
+          <div class="form-row">
+            <label for="s_make">Make</label>
+            <input id="s_make" type="text" placeholder="Make" />
+          </div>
+
+          <div class="form-row">
+            <label for="s_model">Model</label>
+            <input id="s_model" type="text" placeholder="Model" />
+          </div>
+
+          <div class="form-row">
+            <label for="s_book">Book value</label>
+            <input id="s_book" type="text" placeholder="Book value" />
+          </div>
+
+          <div class="form-row">
+            <label for="s_price">Price wanted</label>
+            <input id="s_price" type="text" placeholder="Price wanted" />
+          </div>
+
+          <div class="form-row">
+            <label for="s_offer">Best offer amount</label>
+            <input id="s_offer" type="text" placeholder="Best offer amount" />
+          </div>
+
+          <div class="form-row">
+            <label for="s_buyer">Buyer</label>
+            <input id="s_buyer" type="text" placeholder="Buyer name" />
+          </div>
+
+          <div class="form-row">
+            <label for="s_desc">Description</label>
+            <textarea id="s_desc" placeholder="Description"></textarea>
+          </div>
+
+          <div class="form-row">
+            <label for="s_status">Status</label>
+            <input id="s_status" type="text" placeholder="Status (Available, Sold)" />
+          </div>
+
+          <div class="form-actions">
+            <button class="btn" onclick="addStock()">Add Stock</button>
+            <button class="btn ghost" onclick="clearStockForm()" type="button">Clear</button>
+            <button class="btn ghost" onclick="showPage('allstock')" type="button">Back</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- STOCK VIEW -->
+      <section id="stockView" class="page" style="margin-top:12px;">
+        
+        <div class="card">
+          <h2 style="margin:0 0 12px 0;">Stock Details</h2>
+
+          <div class="detail-row"><div>Seller</div><div id="sv_seller" class="muted"></div></div>
+          
+          <div class="detail-row"><div>Date</div><div id="sv_date" class="muted"></div></div>
+          
+          <div class="detail-row"><div>Vehicle</div><div id="sv_vehicle" class="muted"></div></div>
+          
+          <div class="detail-row"><div>Description</div><div id="sv_desc" class="muted"></div></div>
+          
+          <div class="detail-row"><div>Book Value</div><div id="sv_book" class="muted"></div></div>
+          
+          <div class="detail-row"><div>Price Wanted</div><div id="sv_price" class="muted"></div></div>
+          
+          <div class="detail-row"><div>Best Offer</div><div id="sv_offer" class="muted"></div></div>
+          
+          <div class="detail-row"><div>Buyer</div><div id="sv_buyer" class="muted"></div></div>
+          
+          <div class="detail-row"><div>Status</div><div id="sv_status" class="muted"></div></div>
+
+          <div style="margin-top:12px; display:flex; gap:8px;">
+            
+            <button class="btn" onclick="showEditStock()">Edit</button>
+            
+            <button class="btn danger" onclick="deleteStockViewed()">Delete</button>
+            
+            <button class="btn ghost" onclick="showPage('allstock')">Back</button>
+            
+          </div>
+        </div>
+      </section>
+
+      <!-- STOCK EDIT -->
+      <section id="stockEdit" class="page" style="margin-top:12px;">
+        <div class="card">
+          <h2 style="margin-top:0;">Edit Stock</h2>
+
+          <div class="form-row">
+            <label for="es_seller">Seller</label>
+            <input id="es_seller" type="text" />
+          </div>
+
+          <div class="form-row">
+            <label for="es_date">Date</label>
+            <input id="es_date" type="date" />
+          </div>
+
+          <div class="form-row">
+            <label for="es_year">Year</label>
+            <input id="es_year" type="text" />
+          </div>
+
+          <div class="form-row">
+            <label for="es_make">Make</label>
+            <input id="es_make" type="text" />
+          </div>
+
+          <div class="form-row">
+            <label for="es_model">Model</label>
+            <input id="es_model" type="text" />
+          </div>
+
+          <div class="form-row">
+            <label for="es_book">Book value</label>
+            <input id="es_book" type="text" />
+          </div>
+
+          <div class="form-row">
+            <label for="es_price">Price wanted</label>
+            <input id="es_price" type="text" />
+          </div>
+
+          <div class="form-row">
+            <label for="es_offer">Best offer</label>
+            <input id="es_offer" type="text" />
+          </div>
+
+          <div class="form-row">
+            <label for="es_buyer">Buyer</label>
+            <input id="es_buyer" type="text" />
+          </div>
+
+          <div class="form-row">
+            <label for="es_desc">Description</label>
+            <textarea id="es_desc"></textarea>
+          </div>
+
+          <div class="form-row">
+            <label for="es_status">Status</label>
+            <input id="es_status" type="text" />
+          </div>
+
+          <div class="form-actions">
+            <button class="btn" onclick="saveStockEdits()">Save Changes</button>
+            <button class="btn ghost" onclick="cancelEditStock()">Cancel</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="muted">SalesGear — built with Dexie.js • Offline-first</footer>
+  </div>
+
+<script>
+  
+  if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('sw.js')
+      .then(function(registration) {
+        console.log('ServiceWorker registered: ', registration);
+      })
+      .catch(function(error) {
+        console.log('ServiceWorker registration failed: ', error);
+      });
+  });
+}
+/* ---------- Dexie DB ---------- */
+const db = new Dexie("salesgearDB");
+db.version(1).stores({
+  stock: "++id,seller,date,year,make,model,book,price,offer,buyer,description,status"
+});
+
+/* ---------- Page system ---------- */
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+}
+
+/* ---------- Helpers ---------- */
+function formatDate(d) {
+  if (!d) return '(no date)';
+  try { return new Date(d).toLocaleDateString(); } catch(e) { return d; }
+}
+function vehicleText(t) {
+  return `${t.year || ''} ${t.make || ''} ${t.model || ''}`.trim();
+}
+
+/* ---------- Stock functions ---------- */
+async function addStock() {
+  const seller = document.getElementById('s_seller').value.trim();
+  const date = document.getElementById('s_date').value;
+  const year = document.getElementById('s_year').value.trim();
+  const make = document.getElementById('s_make').value.trim();
+  const model = document.getElementById('s_model').value.trim();
+  const book = document.getElementById('s_book').value.trim();
+  const price = document.getElementById('s_price').value.trim();
+  const offer = document.getElementById('s_offer').value.trim();
+  const buyer = document.getElementById('s_buyer').value.trim();
+  const desc = document.getElementById('s_desc').value.trim();
+  const status = document.getElementById('s_status').value.trim();
+
+  if (!seller || !date) {
+    alert("Please provide a seller and date.");
+    return;
+  }
+
+  await db.stock.add({
+    seller, date, year, make, model, book, price, offer, buyer, description: desc, status
+  });
+
+  clearStockForm();
+  await loadStocklist();
+  showPage('allstock');
+}
+
+function clearStockForm() {
+  ['s_seller','s_date','s_year','s_make','s_model','s_book','s_price','s_offer','s_buyer','s_desc','s_status']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+}
+
+/* load stock list */
+async function loadStocklist() {
+  const list = document.getElementById('stockList');
+  if (!list) return;
+  list.innerHTML = '';
+  const items = await db.stock.toArray();
+
+  // Update summary
+  document.getElementById('summaryCount').textContent = items.length;
+  document.getElementById('summaryStatus').textContent = items.length ? '' : 'No items yet.';
+
+  if (!items.length) {
+    list.innerHTML = '<div class="muted">No stock yet.</div>';
+    return;
+  }
+
+  // Sort by date descending (newest first). Safe fallback if date missing.
+  items.sort((a,b) => {
+    const da = a.date ? new Date(a.date).getTime() : 0;
+    const dbt = b.date ? new Date(b.date).getTime() : 0;
+    return dbt - da;
+  });
+
+  items.forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'list-item';
+
+    const left = document.createElement('div');
+    left.style.flex = '1';
+    left.style.minWidth = '0';
+
+    const title = document.createElement('div');
+    title.style.fontWeight = '700';
+    title.style.marginBottom = '6px';
+    title.textContent = `${t.make || '(no make)'} ${t.model || ''}`.trim();
+
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    meta.innerHTML = `${vehicleText(t)} • ${formatDate(t.date)} • ${t.status || '—'}`;
+
+    left.appendChild(title);
+    left.appendChild(meta);
+
+    const controls = document.createElement('div');
+    controls.className = 'controls';
+
+    const viewBtn = document.createElement('button');
+    viewBtn.className = 'btn ghost';
+    viewBtn.textContent = 'View';
+    viewBtn.onclick = () => openStockView(t.id);
+
+    const editBtn = document.createElement('button');
+    editBtn.className = 'btn ghost';
+    editBtn.textContent = 'Edit';
+    editBtn.onclick = (ev) => { ev.stopPropagation(); beginEditStock(t.id); };
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'btn danger';
+    delBtn.textContent = 'Delete';
+    delBtn.onclick = async (ev) => {
+      ev.stopPropagation();
+      if (confirm(`Delete "${t.make || t.model || 'item'}"?`)) {
+        await db.stock.delete(t.id);
+        await loadStocklist();
+      }
+    };
+
+    controls.appendChild(viewBtn);
+    controls.appendChild(editBtn);
+    controls.appendChild(delBtn);
+
+    div.appendChild(left);
+    div.appendChild(controls);
+    list.appendChild(div);
+  });
+}
+
+/* open stock view */
+let currentStockId = null;
+async function openStockView(id) {
+  const t = await db.stock.get(id);
+  if (!t) return;
+  currentStockId = id;
+
+  document.getElementById('sv_seller').textContent = t.seller || '—';
+  document.getElementById('sv_date').textContent = formatDate(t.date);
+  document.getElementById('sv_vehicle').textContent = vehicleText(t) || '—';
+  document.getElementById('sv_desc').textContent = t.description || '—';
+  document.getElementById('sv_book').textContent = t.book || '—';
+  document.getElementById('sv_price').textContent = t.price || '—';
+  document.getElementById('sv_offer').textContent = t.offer || '—';
+  document.getElementById('sv_buyer').textContent = t.buyer || '—';
+  document.getElementById('sv_status').textContent = t.status || '—';
+
+  showPage('stockView');
+}
+
+/* begin editing stock (prefill fields) */
+async function beginEditStock(id) {
+  const t = await db.stock.get(id);
+  if (!t) return;
+  currentStockId = id;
+
+  document.getElementById('es_seller').value = t.seller || '';
+  document.getElementById('es_date').value = t.date || '';
+  document.getElementById('es_year').value = t.year || '';
+  document.getElementById('es_make').value = t.make || '';
+  document.getElementById('es_model').value = t.model || '';
+  document.getElementById('es_book').value = t.book || '';
+  document.getElementById('es_price').value = t.price || '';
+  document.getElementById('es_offer').value = t.offer || '';
+  document.getElementById('es_buyer').value = t.buyer || '';
+  document.getElementById('es_desc').value = t.description || '';
+  document.getElementById('es_status').value = t.status || '';
+
+  showPage('stockEdit');
+}
+
+/* save edits */
+async function saveStockEdits() {
+  if (!currentStockId) return;
+  const seller = document.getElementById('es_seller').value.trim();
+  const date = document.getElementById('es_date').value;
+  const year = document.getElementById('es_year').value.trim();
+  const make = document.getElementById('es_make').value.trim();
+  const model = document.getElementById('es_model').value.trim();
+  const book = document.getElementById('es_book').value.trim();
+  const price = document.getElementById('es_price').value.trim();
+  const offer = document.getElementById('es_offer').value.trim();
+  const buyer = document.getElementById('es_buyer').value.trim();
+  const desc = document.getElementById('es_desc').value.trim();
+  const status = document.getElementById('es_status').value.trim();
+
+  if (!seller || !date) {
+    alert("Seller and date are required.");
+    return;
+  }
+
+  await db.stock.update(currentStockId, {
+    seller, date, year, make, model, book, price, offer, buyer, description: desc, status
+  });
+
+  currentStockId = null;
+  await loadStocklist();
+  showPage('allstock');
+}
+
+function cancelEditStock() {
+  currentStockId = null;
+  showPage('stockView');
+}
+
+/* delete stock shown in view */
+async function deleteStockViewed() {
+  if (!currentStockId) return;
+  const t = await db.stock.get(currentStockId);
+  if (!t) return;
+  if (confirm(`Delete stock "${t.make || t.model || 'item'}"?`)) {
+    await db.stock.delete(currentStockId);
+    currentStockId = null;
+    await loadStocklist();
+    showPage('allstock');
+  }
+}
+
+/* ---------- Calendar ---------- */
+let calendarYear, calendarMonth;
+const calendarContainer = document.getElementById('calendar-container');
+const calTitleEl = document.getElementById('calTitle');
+
+function renderCalendar(year, month) {
+  calendarYear = year; calendarMonth = month;
+  const firstDay = new Date(year, month, 1);
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const startDay = firstDay.getDay(); // 0 = Sun
+
+  calTitleEl.textContent = new Date(year, month).toLocaleString('default', { month: 'long', year: 'numeric' });
+
+  let html = '<table class="calendar">';
+  html += '<thead><tr><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr></thead>';
+  html += '<tbody>';
+
+  let day = 1;
+  for (let r = 0; r < 6; r++) {
+    html += '<tr>';
+    for (let c = 0; c < 7; c++) {
+      if (r === 0 && c < startDay) {
+        html += '<td></td>';
+      } else if (day > daysInMonth) {
+        html += '<td></td>';
+      } else {
+        const isToday = (new Date().getFullYear() === year && new Date().getMonth() === month && new Date().getDate() === day);
+        html += `<td class="${isToday? 'today':''}">${day}</td>`;
+        day++;
+      }
+    }
+    html += '</tr>';
+    if (day > daysInMonth) break;
+  }
+
+  html += '</tbody></table>';
+  calendarContainer.innerHTML = html;
+}
+
+/* calendar nav */
+document.getElementById('prevMonth').addEventListener('click', () => {
+  const d = new Date(calendarYear, calendarMonth - 1, 1);
+  renderCalendar(d.getFullYear(), d.getMonth());
+});
+document.getElementById('nextMonth').addEventListener('click', () => {
+  const d = new Date(calendarYear, calendarMonth + 1, 1);
+  renderCalendar(d.getFullYear(), d.getMonth());
+});
+
+/* ---------- Import/Export helpers ---------- */
+async function downloadJSON() {
+  const items = await db.stock.toArray();
+  const blob = new Blob([JSON.stringify(items, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'salesgear-stock.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importJSON() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'application/json';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      if (!Array.isArray(data)) throw new Error('Invalid file');
+      await db.transaction('rw', db.stock, async () => {
+        for (const item of data) {
+          // Remove id if present so Dexie assigns new one
+          if (item.id) delete item.id;
+          await db.stock.add(item);
+        }
+      });
+      await loadStocklist();
+      alert('Import complete');
+    } catch (err) {
+      alert('Import failed: ' + err.message);
+    }
+  };
+  input.click();
+}
+
+/* ---------- Boot / initial loads ---------- */
+(async function init(){
+  await loadStocklist();
+
+  // initial calendar: current month
+  const now = new Date();
+  renderCalendar(now.getFullYear(), now.getMonth());
+
+  // set quick links from localStorage if present
+  const savedBlog = localStorage.getItem("blogUrl");
+  const savedProfile = localStorage.getItem("profileUrl");
+  if (savedBlog) document.getElementById("blogLink").href = savedBlog;
+  if (savedProfile) document.getElementById("profileLink").href = savedProfile;
+
+  // Service worker registration (optional)
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker?.register?.('service-worker.js').catch(() => {});
+  }
+})();
+</script>
+</body>
+</html>

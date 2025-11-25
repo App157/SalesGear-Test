@@ -1,40 +1,48 @@
-const cacheName = 'salesgear-v1';
-const assetsToCache = [
-  './',
-  './index.html',
-  './style.css',
-  './script.js',
-  './dexie.js',
-  './manifest.json',
-  './service-worker.js',
-  './icon-192.png',
-  './icon-512.png'
+const CACHE_NAME = "salesgear-cache-v1";
+
+const ASSETS = [
+  "./",
+  "./index.html",
+  "./manifest.json",
+  "./style.css",
+  "./sw.js",
+  "./icon-192.png",
+  "./icon-512.png",
+  "./dexie.min.js"
 ];
 
-self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(cacheName).then(cache => {
-      return cache.addAll(assetsToCache);
-    })
+// Install event — caches files
+self.addEventListener("install", event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
   );
-  self.skipWaiting(); // Force the waiting service worker to become active
+  self.skipWaiting();
 });
 
-self.addEventListener('activate', e => {
-  e.waitUntil(
+// Activate event — cleanup old caches
+self.addEventListener("activate", event => {
+  event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
         keys.map(key => {
-          if (key !== cacheName) return caches.delete(key);
+          if (key !== CACHE_NAME) return caches.delete(key);
         })
       )
     )
   );
-  self.clients.claim(); // Take control of all clients immediately
+  self.clients.claim();
 });
 
-self.addEventListener('fetch', e => {
-  e.respondWith(
-    caches.match(e.request).then(response => response || fetch(e.request))
+// Fetch event — offline-first strategy
+self.addEventListener("fetch", event => {
+  event.respondWith(
+    caches.match(event.request).then(cached => {
+      return (
+        cached ||
+        fetch(event.request).catch(() =>
+          caches.match("./index.html")
+        )
+      );
+    })
   );
 });

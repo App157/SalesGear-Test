@@ -278,7 +278,7 @@
   
   if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
-    navigator.serviceWorker.register('sw.js')
+    navigator.serviceWorker.register('./sw.js') // <-- add './' here
       .then(function(registration) {
         console.log('ServiceWorker registered: ', registration);
       })

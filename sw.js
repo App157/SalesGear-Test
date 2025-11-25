@@ -1,50 +1,40 @@
-const CACHE_NAME = 'salesgear-cache-v1';
-const FILES_TO_CACHE = [
+const cacheName = 'salesgear-v1';
+const assetsToCache = [
   './',
   './index.html',
   './style.css',
-  './sw.js',
+  './script.js',
+  './dexie.js',
   './manifest.json',
-  './icon-512.png',
-  './icon-192.png'
+  './service-worker.js',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
-// Install: cache all files
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      console.log('Caching app shell...');
-      return cache.addAll(FILES_TO_CACHE);
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(cacheName).then(cache => {
+      return cache.addAll(assetsToCache);
     })
   );
-  self.skipWaiting();
+  self.skipWaiting(); // Force the waiting service worker to become active
 });
 
-// Activate: clean old caches
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then(keys => Promise.all(
-      keys.map(key => {
-        if (key !== CACHE_NAME) {
-          console.log('Removing old cache', key);
-          return caches.delete(key);
-        }
-      })
-    ))
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys.map(key => {
+          if (key !== cacheName) return caches.delete(key);
+        })
+      )
+    )
   );
-  self.clients.claim();
+  self.clients.claim(); // Take control of all clients immediately
 });
 
-// Fetch: serve cached files when offline
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    fetch(event.request)
-      .then(response => {
-        // Optionally update cache with new response
-        const responseClone = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseClone));
-        return response;
-      })
-      .catch(() => caches.match(event.request)) // fallback to cache if offline
+self.addEventListener('fetch', e => {
+  e.respondWith(
+    caches.match(e.request).then(response => response || fetch(e.request))
   );
 });

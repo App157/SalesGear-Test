@@ -1,7 +1,7 @@
 {
   "name": "SalesGear",
   "short_name": "SalesGear",
-  "start_url": "/index.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0099aa",
